@@ -46,7 +46,6 @@ def load_config(profile: Optional[Profile] = None) -> dict:
     global_config = load_yaml(GLOBAL_CONFIG)
     profile_config = load_yaml(PROFILE_CONFIGS[profile])
     app_config = merge_dicts(global_config, profile_config)
-
-    return merge_dicts(app_config, {"gemini_api_key": os.environ.get("GEMINI_API_KEY")})
+    return app_config
 
 APP_CONFIG = load_config()
