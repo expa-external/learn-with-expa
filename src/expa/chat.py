@@ -2,7 +2,7 @@
 import time
 import subprocess
 from gtts import gTTS
-from .model import chat_session
+from .llm import chat_session
 import asyncio
 
 async def chat_with_gemini(audio_data: bytes):
