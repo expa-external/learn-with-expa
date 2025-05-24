@@ -11,6 +11,7 @@ load_dotenv()  # must come before reading env vars
 BASE_PATH = Path(__file__).parent
 GLOBAL_CONFIG = BASE_PATH / "application.yaml"
 PROFILE_CONFIGS = {
+    "local": BASE_PATH / "application-local.yaml",
     "dev": BASE_PATH / "application-dev.yaml",
     "prod": BASE_PATH / "application-prod.yaml",
 }
@@ -45,7 +46,17 @@ def load_config(profile: Optional[Profile] = None) -> dict:
 
     global_config = load_yaml(GLOBAL_CONFIG)
     profile_config = load_yaml(PROFILE_CONFIGS[profile])
-    app_config = merge_dicts(global_config, profile_config)
+    env_var_config = {
+        "google": {
+            "gemini": {
+                "api-key": os.getenv("GEMINI_API_KEY")
+            },
+            "firestore": {
+                "service-account-file": os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+            }
+        }
+    }
+    app_config = merge_dicts(merge_dicts(global_config, profile_config), env_var_config)
     return app_config
 
 APP_CONFIG = load_config()

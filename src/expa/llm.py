@@ -8,9 +8,9 @@ SYSTEM_PROMPT = ("You are a friendly multilingual voice assistant. "
                  "You will maintain an encouraging tone and avoid personal remarks or comments on the responses. ")
 
 
-genai.configure(api_key=APP_CONFIG.get('gemini').get('api-key'))
+genai.configure(api_key=APP_CONFIG.get("google").get('gemini').get('api-key'))
 
-model = genai.GenerativeModel(APP_CONFIG.get('gemini').get('model'))  
+model = genai.GenerativeModel(APP_CONFIG.get("google").get('gemini').get('model'))  
 
 chat_session = model.start_chat(history=[
     {"role": "user", "parts": [SYSTEM_PROMPT]},

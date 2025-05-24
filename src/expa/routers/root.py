@@ -3,6 +3,6 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
-@router.get("/", tags=["root"])
+@router.get("/home", tags=["home"])
 def read_root():
     return JSONResponse({"Hello": "World"})
