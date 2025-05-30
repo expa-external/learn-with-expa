@@ -2,10 +2,14 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+from src.expa.models import Role
+
+
 class ConversationRequestBody(BaseModel):
     user_input: str
     continue_conversation: bool
     end_conversation: bool
+
 
 class ConversationResponseBody(BaseModel):
     conversation_id: float
@@ -14,8 +18,9 @@ class ConversationResponseBody(BaseModel):
 
 class Chat(BaseModel):
     text: str
-    role: str
+    role: Role
     timestamp: datetime
+
 
 class Conversation(BaseModel):
     conversation_id: str
@@ -25,5 +30,3 @@ class Conversation(BaseModel):
     creation_ts: datetime
     updated_ts: datetime
     summary: str
-
-
