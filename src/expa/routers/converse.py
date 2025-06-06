@@ -6,6 +6,7 @@ from expa.chat import chat_with_gemini
 from expa.record_audio import record_audio_vad 
 from expa.transcribe_audio import transcribe_audio
 
+from ..conversation_persist import get_conversation_list
 from ..models.conversation import ConversationRequestBody, ConversationResponseBody, Conversation
 
 router = APIRouter(prefix="/api/v1", tags=["converse"])
@@ -39,5 +40,5 @@ async def converse(conversation_request_body: ConversationRequestBody):
 
 @router.get("/conversation", response_model=List[Conversation])
 async def converse(user_id: str, last_conversations: Optional[int] = None):
-    conversationList = []
+    conversationList = get_conversation_list()
     return conversationList

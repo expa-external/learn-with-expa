@@ -34,8 +34,8 @@ def merge_dicts(base: dict, override: dict) -> dict:
     return result
 
 def get_active_profile() -> Profile:
-    # Default to 'dev' if not set
-    profile = os.environ.get("APP_PROFILE", "dev").lower()
+    # Default to 'local' if not set
+    profile = os.environ.get("APP_PROFILE", "local").lower()
     if profile not in PROFILE_CONFIGS:
         raise ValueError(f"Invalid APP_PROFILE: {profile}. Must be one of {list(PROFILE_CONFIGS.keys())}")
     return profile  # type: ignore

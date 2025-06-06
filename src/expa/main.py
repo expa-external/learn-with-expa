@@ -5,12 +5,13 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from .routers.root import router as root_router
 from .routers.converse import router as converse_router
+from expa_configs import APP_CONFIG
 
 load_dotenv()
 
 
 def create_app() -> FastAPI:
-    with open('logger_config.json', 'r') as f:
+    with open(APP_CONFIG['logger']['config'], 'r') as f:
         config = json.load(f)
     logging.config.dictConfig(config)
     logger = logging.getLogger(__name__)
