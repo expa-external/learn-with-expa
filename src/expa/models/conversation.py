@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-from src.expa.models import Role
+from .role import Role
 
 
 class ConversationRequestBody(BaseModel):
@@ -26,7 +26,7 @@ class Conversation(BaseModel):
     conversation_id: str
     conversation_state: str
     user_id: str
-    chatHistory: List[Chat]
+    chat_history: List[Chat]
     creation_ts: datetime
     updated_ts: datetime
     summary: str

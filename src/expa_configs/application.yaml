@@ -1,0 +1,2 @@
+logger:
+  config: src/expa_configs/logger_config.json

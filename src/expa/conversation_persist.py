@@ -1,10 +1,11 @@
 import datetime
 import logging
 import firebase_admin
-from firebase_admin import firestore
+from firebase_admin import firestore, credentials
 from google.cloud.firestore_v1 import ArrayUnion
 
-from src.expa.models.conversation import Conversation, Chat
+from expa_configs import APP_CONFIG, get_active_profile
+from expa.models.conversation import Conversation, Chat
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +52,39 @@ def update_data_to_collection(chat: Chat, session_id: str):
         raise e
 
 
+def get_conversation_list() -> list[Conversation]:
+    
+    try:
+        logger.info("Fetching conversation list from Firestore")
+        docs = (ConversationPersist.connection
+                .collection(ConversationPersist.collection)
+                .stream())
+
+        conversation_list = []
+        for doc in docs:
+            data = doc.to_dict()
+            # Convert Firestore dict to Conversation model
+            conversation = Conversation(**data)
+            conversation_list.append(conversation)
+
+        logger.info(f"Fetched {len(conversation_list)} conversations")
+        return conversation_list
+
+    except Exception as e:
+        logger.error("Error fetching conversation list from Firestore", exc_info=True)
+        raise e
+
 class ConversationPersist(object):
     connection = None
     collection = 'conversations'
 
     def __init__(self):
         if ConversationPersist.connection is None:
-            app = firebase_admin.initialize_app()
+            if get_active_profile() == "local":
+                cred = credentials.Certificate(APP_CONFIG['google']['firestore']['service-account-file'])
+                firebase_admin.initialize_app(credential=cred)
+            else:
+                firebase_admin.initialize_app()
             ConversationPersist.connection = firestore.client()
+
+ConversationPersist()
