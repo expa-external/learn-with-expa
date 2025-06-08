@@ -4,8 +4,8 @@ import firebase_admin
 from firebase_admin import firestore, credentials
 from google.cloud.firestore_v1 import ArrayUnion
 
-from expa_configs import APP_CONFIG, get_active_profile
-from expa.models.conversation import Conversation, Chat
+from ..expa_configs import APP_CONFIG, get_active_profile
+from ..expa.models.conversation import Conversation, Chat
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def add_data_to_collection(conversation: Conversation):
         logger.info(f"Creating a new document for session id: {conversation.conversation_id}")
         doc_ref = (ConversationPersist.connection.collection(ConversationPersist.collection)
                    .document(conversation.conversation_id))
-        doc_ref.set(conversation)
+        doc_ref.set(conversation.model_dump())
     except Exception as e:
         logger.error(f"Error while creating a new document for session id {conversation.conversation_id}", e)
         raise e
