@@ -1,7 +1,9 @@
+import json
 import uuid
+from typing import List
 
 from google import genai
-from .models.conversation import Conversation
+from .models.conversation import Conversation, Chat, Role
 from google.genai import types
 from google.genai.types import CachedContent
 
@@ -59,7 +61,8 @@ SYSTEM_PROMPT = ("You are a friendly multilingual voice assistant. "
                  )
 
 api_key = 'AIzaSyCAq3W9kz6dJCGO6jF0Ee5zLBhWK6FcUpg'
-model = 'models/gemini-2.0-flash-001'
+chat_model = 'models/gemini-2.0-flash-001'
+embedding_model = 'models/text-multilingual-embedding-002'
 
 
 # genai.configure(api_key=APP_CONFIG.get("google").get('gemini').get('api-key'))
@@ -75,14 +78,28 @@ model = 'models/gemini-2.0-flash-001'
 #     print(f'{cache=}')
 
 
-def initiateConversation(user_input: str):
-    contents = [SYSTEM_PROMPT, user_input]
+def converse_with_model(user_input: List[Chat]):
+    prompt = Chat(
+        text=SYSTEM_PROMPT,
+        role=Role.SYSTEM
+    )
+    contents = [prompt] + user_input
     response = ModelConnection.client.models.generate_content(
-        model=model,
+        model=chat_model,
         contents=contents
     )
     print(response.usage_metadata)
     return response.text
+
+
+def generate_embedding(chat: Chat):
+    result = ModelConnection.client.models.embed_content(
+        model=embedding_model,
+        contents=json.dumps(chat),
+        config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY")
+    )
+    chat.embedding = result.embeddings
+    return chat
 
 
 class ModelConnection(object):

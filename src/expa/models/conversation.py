@@ -18,14 +18,16 @@ class ConversationResponseBody(BaseModel):
 
 
 class Role(str, Enum):
-    SYSTEM = "SYSTEM"
-    USER = "USER"
+    SYSTEM = "system"
+    USER = "user"
+    MODEL = "model"
 
 
 class Chat(BaseModel):
     text: str
     role: Role
     timestamp: datetime
+    embedding: List[float]
 
 
 class Conversation(BaseModel):
