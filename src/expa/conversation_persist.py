@@ -14,7 +14,8 @@ def update_summary_after_completion(session_id: str, summary: str):
     try:
         logger.info(f"Updating the summary for conversation with session id: {session_id}")
         doc_ref = ConversationPersist.connection.collection(ConversationPersist.collection).document(session_id)
-        if doc_ref.exists:
+        doc = doc_ref.get()
+        if doc.exists:
             doc_ref.update({'summary': summary})
             doc_ref.update({'updated_ts': datetime.datetime.now().isoformat()})
             logger.info(f"Successfully updated the conversation with conversation id: {session_id}")
@@ -41,9 +42,12 @@ def update_data_to_collection(chat: Chat, session_id: str):
     try:
         logger.info(f"Adding a new chat to document with session id: {session_id}")
         doc_ref = ConversationPersist.connection.collection(ConversationPersist.collection).document(session_id)
-        if doc_ref.exists:
-            doc_ref.update({'chatHistory': ArrayUnion([chat])})
-            doc_ref.update({'updated_ts': datetime.datetime.now().isoformat()})
+        doc = doc_ref.get()
+        if doc.exists:
+            doc_ref.update({
+                'chat_history': ArrayUnion([chat.model_dump()]),
+                'updated_ts': datetime.datetime.now().isoformat()
+                })
         else:
             logger.error(f"No conversation found with conversation id: {session_id}")
             raise ValueError(f"No conversation found with conversation id: {session_id}")
@@ -52,12 +56,13 @@ def update_data_to_collection(chat: Chat, session_id: str):
         raise e
 
 
-def get_conversation_list() -> list[Conversation]:
+def get_conversation_list(user_id: str) -> list[Conversation]:
     
     try:
         logger.info("Fetching conversation list from Firestore")
         docs = (ConversationPersist.connection
                 .collection(ConversationPersist.collection)
+                .where("user_id", "==", user_id)
                 .stream())
 
         conversation_list = []
@@ -72,6 +77,22 @@ def get_conversation_list() -> list[Conversation]:
 
     except Exception as e:
         logger.error("Error fetching conversation list from Firestore", exc_info=True)
+        raise e
+
+def get_most_recent_conversation(user_id: str) -> Conversation:
+    try:
+        docs = (
+                ConversationPersist.connection
+                .collection(ConversationPersist.collection)
+                .where("user_id", "==", user_id)
+                .order_by("updated_ts", direction=firestore.Query.DESCENDING)
+                .limit(1)
+                .stream()
+            )
+        latest_doc = next(docs, None)
+        return latest_doc
+    except Exception as e:
+        logger.error("Error fetching most recent conversation from Firestore", exc_info=True)
         raise e
 
 class ConversationPersist(object):
