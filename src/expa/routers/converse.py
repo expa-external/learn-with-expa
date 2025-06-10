@@ -9,7 +9,7 @@ from pydantic import BaseModel
 # from expa.transcribe_audio import transcribe_audio
 import uuid
 
-from ..conversation_persist import get_conversation_list, add_data_to_collection
+from ..conversation_persist import get_conversation_list, add_data_to_collection, get_most_recent_conversation, update_data_to_collection
 from ..models.conversation import ConversationRequestBody, ConversationResponseBody, Conversation, Chat, Role
 # from ..llm import initiateCache
 from ..llm import initiateConversation
@@ -55,13 +55,41 @@ async def converse(conversation_request_body: ConversationRequestBody):
             chat_history=[chat]
         )
         add_data_to_collection(conversation)
-    return ConversationResponseBody(
-        model_response=response,
-        conversation_id=conversation_id
-    )
+        return ConversationResponseBody(
+            model_response=response,
+            conversation_id=conversation_id
+        )
+    else:
+        user_id = conversation_request_body.user_first_name
+        # Fetch most recent conversation
+        latest_doc_ref = get_most_recent_conversation(user_id=user_id)
+        conversation = latest_doc_ref.to_dict()
+        conversation_id = conversation["conversation_id"]
+
+        # Add user input to chat history
+        user_chat = Chat(
+            text=conversation_request_body.user_input,
+            role=Role.USER,
+            timestamp=datetime.datetime.now()
+        )
+        update_data_to_collection(user_chat, conversation_id)
+        
+        # Get system response
+        response = initiateConversation(user_input=conversation_request_body.user_input)
+
+        system_chat = Chat(
+            text=response,
+            role=Role.SYSTEM,
+            timestamp=datetime.datetime.now()
+        )
+        update_data_to_collection(system_chat, conversation_id)
+        return ConversationResponseBody(
+            model_response=response,
+            conversation_id=conversation_id
+        )
 
 
 @router.get("/conversation", response_model=List[Conversation])
 async def converse(user_id: str, last_conversations: Optional[int] = None):
-    conversationList = get_conversation_list()
+    conversationList = get_conversation_list(user_id)
     return conversationList
