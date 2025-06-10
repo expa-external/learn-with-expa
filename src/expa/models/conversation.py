@@ -26,8 +26,8 @@ class Role(str, Enum):
 class Chat(BaseModel):
     text: str
     role: Role
-    timestamp: datetime
-    embedding: List[float]
+    timestamp: datetime | None = None
+    embedding: List[float] | None = None
 
 
 class Conversation(BaseModel):
