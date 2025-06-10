@@ -62,7 +62,7 @@ SYSTEM_PROMPT = ("You are a friendly multilingual voice assistant. "
 
 api_key = 'AIzaSyCAq3W9kz6dJCGO6jF0Ee5zLBhWK6FcUpg'
 chat_model = 'models/gemini-2.0-flash-001'
-embedding_model = 'models/text-multilingual-embedding-002'
+embedding_model = 'models/text-embedding-004'
 
 
 # genai.configure(api_key=APP_CONFIG.get("google").get('gemini').get('api-key'))
@@ -79,11 +79,16 @@ embedding_model = 'models/text-multilingual-embedding-002'
 
 
 def converse_with_model(user_input: List[Chat]):
-    prompt = Chat(
-        text=SYSTEM_PROMPT,
-        role=Role.SYSTEM
-    )
-    contents = [prompt] + user_input
+    prompt = {
+        'role': Role.USER.value,
+        'parts': [{'text': SYSTEM_PROMPT}]
+    }
+    contents = [prompt]
+    for message in user_input:
+        contents.append({
+            'role': message.role.value,
+            'parts': [{'text': message.text}]
+        })
     response = ModelConnection.client.models.generate_content(
         model=chat_model,
         contents=contents
@@ -95,7 +100,7 @@ def converse_with_model(user_input: List[Chat]):
 def generate_embedding(chat: Chat):
     result = ModelConnection.client.models.embed_content(
         model=embedding_model,
-        contents=json.dumps(chat),
+        contents=chat.text,
         config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY")
     )
     chat.embedding = result.embeddings
