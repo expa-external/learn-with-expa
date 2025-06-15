@@ -5,7 +5,8 @@ from typing import List
 from google import genai
 from .models.conversation import Conversation, Chat, Role
 from google.genai import types
-from google.genai.types import CachedContent
+from google.genai.types import CachedContent, ContentEmbedding, EmbedContentResponse
+import numpy as np
 
 # # from expa_configs import APP_CONFIG
 
@@ -78,17 +79,18 @@ embedding_model = 'models/text-embedding-004'
 #     print(f'{cache=}')
 
 
-def converse_with_model(user_input: List[Chat]):
+def converse_with_model(user_input: Chat, conversation_context: List[dict]):
     prompt = {
         'role': Role.USER.value,
         'parts': [{'text': SYSTEM_PROMPT}]
     }
     contents = [prompt]
-    for message in user_input:
-        contents.append({
-            'role': message.role.value,
-            'parts': [{'text': message.text}]
-        })
+    for data in conversation_context:
+        contents.append({'role': 'user' if data['speaker'] == 'user' else 'model', 'parts': [{'text': data['text']}]})
+    contents.append({
+        'role': user_input.role.value,
+        'parts': [{'text': user_input.text}]
+    })
     response = ModelConnection.client.models.generate_content(
         model=chat_model,
         contents=contents
@@ -103,8 +105,19 @@ def generate_embedding(chat: Chat):
         contents=chat.text,
         config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY")
     )
-    chat.embedding = result.embeddings
+    chat.embedding = unit_normalize_the_chat_embedding(result)
     return chat
+
+
+def unit_normalize_the_chat_embedding(embeddingResponse: EmbedContentResponse):
+    embedded_values = embeddingResponse.embeddings.pop().values
+    print(embedded_values)
+    embedding_array = np.array(embedded_values)
+    norm = np.linalg.norm(embedding_array)
+    if norm == 0:
+        return embedded_values
+    normalised_array = embedding_array / norm
+    return normalised_array.tolist()
 
 
 class ModelConnection(object):

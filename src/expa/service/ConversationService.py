@@ -7,12 +7,13 @@ initial_user_input = ("This is start of the conversation with the user. You are 
 
 logger = logging.getLogger(__name__)
 
+
 def initiate_conversation(conversation_request_body: ConversationRequestBody):
     conversation_id = str(uuid.uuid4())
     print("Forming chat model")
     user_input = form_chat_model(initial_user_input + conversation_request_body.user_first_name, Role.USER)
     print("Passing prompt to model")
-    response = form_chat_model(converse_with_model([user_input]), Role.MODEL)
+    response = form_chat_model(converse_with_model(user_input, []), Role.MODEL)
     print(response)
     print("Generate Embedding")
     response_with_embedding = generate_embedding(response)
@@ -25,6 +26,25 @@ def initiate_conversation(conversation_request_body: ConversationRequestBody):
         conversation_id=conversation_id
     )
 
+
+def continue_conversation(conversation_request_body: ConversationRequestBody):
+    print("Form chat model from the user input")
+    user_input = form_chat_model(conversation_request_body.user_input, Role.USER)
+    print("Generate embeddings for the input")
+    user_input_with_embedding = generate_embedding(user_input)
+    print("Updating the firestore conversation with the latest user input")
+    update_data_to_collection(user_input_with_embedding, conversation_request_body.conversation_id)
+    print("Retrieve context from firestore using the user embeddings.")
+    conversational_context = retrieve_context_from_embeddings(user_input_with_embedding,
+                                                              conversation_request_body.conversation_id, k=10)
+    model_response = form_chat_model(converse_with_model(user_input, conversational_context.stream()), Role.MODEL)
+    print("Generate embedding of model response")
+    model_response_with_embedding = generate_embedding(model_response)
+    print("Persist data to collection")
+    update_data_to_collection(model_response_with_embedding, conversation_request_body.conversation_id)
+    return ConversationResponseBody(
+        model_response=model_response.text
+    )
 
 def form_chat_model(text: str, role: Role):
     return Chat(

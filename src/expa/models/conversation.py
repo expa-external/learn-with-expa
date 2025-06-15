@@ -13,7 +13,7 @@ class ConversationRequestBody(BaseModel):
 
 
 class ConversationResponseBody(BaseModel):
-    conversation_id: str
+    conversation_id: str | None = None
     model_response: str
 
 
