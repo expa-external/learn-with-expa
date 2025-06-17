@@ -3,6 +3,8 @@ import logging
 import firebase_admin
 from firebase_admin import firestore, credentials
 from google.cloud.firestore_v1 import ArrayUnion
+from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
+from google.cloud.firestore_v1.vector import Vector
 
 from ..expa_configs import APP_CONFIG, get_active_profile
 from ..expa.models.conversation import Conversation, Chat
@@ -56,8 +58,24 @@ def update_data_to_collection(chat: Chat, session_id: str):
         raise e
 
 
+def retrieve_context_from_embeddings(chat: Chat, conversation_id: str, k: int):
+    try:
+        logger.info(f"Fetching {k} similar conversation for the conversation id: {conversation_id} "
+                    f"to fetch the context")
+        vector_query = ConversationPersist.connection.collection(ConversationPersist.collection).find_nearest(
+            vector_field="embedding",
+            query_vector=Vector(chat.embedding),
+            distance_measure=DistanceMeasure.DOT_PRODUCT,
+            limit=k,
+        )
+        return vector_query
+    except Exception as e:
+        logger.error(f"Error while fetching similar conversation for conversation id: {conversation_id}")
+        raise e
+
+
+
 def get_conversation_list(user_id: str) -> list[Conversation]:
-    
     try:
         logger.info("Fetching conversation list from Firestore")
         docs = (ConversationPersist.connection

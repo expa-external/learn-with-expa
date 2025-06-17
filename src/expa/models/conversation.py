@@ -13,19 +13,21 @@ class ConversationRequestBody(BaseModel):
 
 
 class ConversationResponseBody(BaseModel):
-    conversation_id: str
+    conversation_id: str | None = None
     model_response: str
 
 
 class Role(str, Enum):
-    SYSTEM = "SYSTEM"
-    USER = "USER"
+    SYSTEM = "system"
+    USER = "user"
+    MODEL = "model"
 
 
 class Chat(BaseModel):
     text: str
     role: Role
-    timestamp: datetime
+    timestamp: datetime | None = None
+    embedding: List[float] | None = None
 
 
 class Conversation(BaseModel):
