@@ -91,6 +91,7 @@ def converse_with_model(user_input: Chat, conversation_context: List[dict]):
         'role': user_input.role.value,
         'parts': [{'text': user_input.text}]
     })
+    print(contents)
     response = ModelConnection.client.models.generate_content(
         model=chat_model,
         contents=contents
@@ -117,6 +118,7 @@ def unit_normalize_the_chat_embedding(embeddingResponse: EmbedContentResponse):
     if norm == 0:
         return embedded_values
     normalised_array = embedding_array / norm
+    print(normalised_array)
     return normalised_array.tolist()
 
 
