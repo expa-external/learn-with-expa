@@ -27,7 +27,6 @@ class Chat(BaseModel):
     text: str
     role: Role
     timestamp: datetime | None = None
-    embedding: List[float] | None = None
     conversationId: str
 
 
@@ -38,4 +37,3 @@ class Conversation(BaseModel):
     chat_history: List[Chat] = None
     creation_ts: datetime
     updated_ts: datetime
-    summary: Optional[str] = None
