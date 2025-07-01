@@ -14,7 +14,7 @@ class ConversationRequestBody(BaseModel):
 
 class ConversationResponseBody(BaseModel):
     conversation_id: str | None = None
-    model_response: str
+    model_response: str | None = None
 
 
 class Role(str, Enum):
@@ -27,14 +27,13 @@ class Chat(BaseModel):
     text: str
     role: Role
     timestamp: datetime | None = None
-    embedding: List[float] | None = None
+    conversationId: str
 
 
 class Conversation(BaseModel):
     conversation_id: str
     conversation_state: str
     user_id: str
-    chat_history: List[Chat]
+    chat_history: List[Chat] = None
     creation_ts: datetime
     updated_ts: datetime
-    summary: Optional[str] = None

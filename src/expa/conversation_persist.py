@@ -1,10 +1,13 @@
 import datetime
+import json
 import logging
+from typing import List
+from itertools import islice
+
 import firebase_admin
+from datetime import datetime
 from firebase_admin import firestore, credentials
 from google.cloud.firestore_v1 import ArrayUnion
-from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
-from google.cloud.firestore_v1.vector import Vector
 
 from ..expa_configs import APP_CONFIG, get_active_profile
 from ..expa.models.conversation import Conversation, Chat
@@ -12,14 +15,14 @@ from ..expa.models.conversation import Conversation, Chat
 logger = logging.getLogger(__name__)
 
 
-def update_summary_after_completion(session_id: str, summary: str):
+def update_summary_after_completion(session_id: str):
     try:
         logger.info(f"Updating the summary for conversation with session id: {session_id}")
         doc_ref = ConversationPersist.connection.collection(ConversationPersist.collection).document(session_id)
         doc = doc_ref.get()
         if doc.exists:
-            doc_ref.update({'summary': summary})
-            doc_ref.update({'updated_ts': datetime.datetime.now().isoformat()})
+            doc_ref.update({'conversation_state': "ENDED"})
+            doc_ref.update({'updated_ts': datetime.now().isoformat()})
             logger.info(f"Successfully updated the conversation with conversation id: {session_id}")
         else:
             logger.error(f"No conversation found with conversation id: {session_id}")
@@ -27,7 +30,6 @@ def update_summary_after_completion(session_id: str, summary: str):
     except Exception as e:
         logger.error(f"Error while updating the conversation with conversation id: {session_id}")
         raise e
-
 
 def add_data_to_collection(conversation: Conversation):
     try:
@@ -40,16 +42,16 @@ def add_data_to_collection(conversation: Conversation):
         raise e
 
 
-def update_data_to_collection(chat: Chat, session_id: str):
+def update_data_to_collection(chat: List[dict], session_id: str):
     try:
         logger.info(f"Adding a new chat to document with session id: {session_id}")
         doc_ref = ConversationPersist.connection.collection(ConversationPersist.collection).document(session_id)
         doc = doc_ref.get()
         if doc.exists:
             doc_ref.update({
-                'chat_history': ArrayUnion([chat.model_dump()]),
-                'updated_ts': datetime.datetime.now().isoformat()
-                })
+                'chat_history': ArrayUnion(chat),
+                'updated_ts': datetime.now().isoformat()
+            })
         else:
             logger.error(f"No conversation found with conversation id: {session_id}")
             raise ValueError(f"No conversation found with conversation id: {session_id}")
@@ -57,23 +59,23 @@ def update_data_to_collection(chat: Chat, session_id: str):
         logger.error(f"Error while updating the conversation with conversation id: {session_id}")
         raise e
 
-
-def retrieve_context_from_embeddings(chat: Chat, conversation_id: str, k: int):
+def fetch_last_k_conversation(conversation_id: str, k : int):
     try:
-        logger.info(f"Fetching {k} similar conversation for the conversation id: {conversation_id} "
-                    f"to fetch the context")
-        vector_query = ConversationPersist.connection.collection(ConversationPersist.collection).find_nearest(
-            vector_field="embedding",
-            query_vector=Vector(chat.embedding),
-            distance_measure=DistanceMeasure.DOT_PRODUCT,
-            limit=k,
-        )
-        return vector_query
+        logger.info(f"Fetching last {k} conversations for conversation id {conversation_id}")
+        doc_ref = ConversationPersist.connection.collection(ConversationPersist.collection).document(conversation_id)
+        conversation_doc = doc_ref.get()
+        if conversation_doc.exists:
+            logger.info(f"Conversation found with conversation id {conversation_id}")
+            print(conversation_doc.to_dict())
+            print(conversation_doc.to_dict()['chat_history'])
+            conversation = conversation_doc.to_dict()['chat_history']
+            return conversation[-k:]
+        else:
+            logger.error(f"No conversation found with conversation id: {conversation_id}")
+            raise ValueError(f"No conversation found with conversation id: {conversation_id}")
     except Exception as e:
-        logger.error(f"Error while fetching similar conversation for conversation id: {conversation_id}")
+        logger.error(f"Error while fetching the chat history with conversation id: {conversation_id}")
         raise e
-
-
 
 def get_conversation_list(user_id: str) -> list[Conversation]:
     try:

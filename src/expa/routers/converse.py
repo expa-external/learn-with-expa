@@ -93,8 +93,11 @@ initial_user_input = ("This is start of the conversation with the user. You are 
 async def converse(conversation_request_body: ConversationRequestBody):
     if conversation_request_body.continue_conversation is False:
         return initiate_conversation(conversation_request_body)
-    else:
+    elif conversation_request_body.continue_conversation is True:
         return continue_conversation(conversation_request_body)
+    elif conversation_request_body.end_conversation is True:
+        return end_conversation(conversation_request_body)
+
 
 
 
