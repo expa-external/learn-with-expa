@@ -1,4 +1,4 @@
-from conversation import ConversationRequestBody, ConversationResponseBody
+from ..models.conversation import ConversationRequestBody, ConversationResponseBody
 from ..llm import *
 from ..conversation_persist import *
 import datetime

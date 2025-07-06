@@ -122,8 +122,8 @@ class ConversationPersist(object):
     def __init__(self):
         if ConversationPersist.connection is None:
             if get_active_profile() == "local":
-                cred = credentials.Certificate(APP_CONFIG['google']['firestore']['service-account-file'])
-                firebase_admin.initialize_app(credential=cred)
+                cred = credentials.Certificate("src/expa_configs/cadet-user-8489fcd85485.json")
+                firebase_admin.initialize_app(credential=cred, options={'projectId': 'cadet-user'})
             else:
                 firebase_admin.initialize_app()
             ConversationPersist.connection = firestore.client()
