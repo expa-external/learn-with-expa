@@ -8,9 +8,10 @@ import firebase_admin
 from datetime import datetime
 from firebase_admin import firestore, credentials
 from google.cloud.firestore_v1 import ArrayUnion
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 from ..expa_configs import APP_CONFIG, get_active_profile
-from ..expa.models.conversation import Conversation, Chat
+from ..expa.models.conversation import Conversation, Chat, UpdateGuardrails
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,36 @@ def add_data_to_collection(conversation: Conversation):
     except Exception as e:
         logger.error(f"Error while creating a new document for session id {conversation.conversation_id}", e)
         raise e
+
+
+def update_guardrails_for_model(user_input: UpdateGuardrails):
+    try:
+        logger.info(f"Guardrails for model updated by user {user_input.created_by}")
+        doc_ref = (ConversationPersist.connection.collection(ConversationPersist.guardrails_collection)
+                   .document(user_input.version_id))
+        doc_ref.set(user_input.model_dump())
+    except Exception as e:
+        logger.error(f"Error while creating a new version for guardrails", e)
+        raise e
+
+
+def fetch_last_updated_guardrails_for_model() -> str:
+    try:
+        logger.info("Fetching last updated guardrails entered by user.")
+        docs = (ConversationPersist.connection.collection(ConversationPersist.guardrails_collection)
+                .where(filter=FieldFilter("user_input", "!=", ""))
+                .order_by("created_on", direction=firestore.Query.DESCENDING)
+                .limit(1)
+                .stream()
+                )
+        latest_doc = next(docs, None)
+        if latest_doc is not None:
+            return latest_doc.to_dict().get("user_input")
+        return ""
+    except Exception as e:
+        logger.error("Error while fetching last version for guardrails", e)
+        raise e
+
 
 
 def update_data_to_collection(chat: List[dict], session_id: str):
@@ -118,6 +149,7 @@ def get_most_recent_conversation(user_id: str) -> Conversation:
 class ConversationPersist(object):
     connection = None
     collection = 'conversations'
+    guardrails_collection = 'guardrails'
 
     def __init__(self):
         if ConversationPersist.connection is None:

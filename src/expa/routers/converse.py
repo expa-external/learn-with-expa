@@ -105,3 +105,8 @@ async def converse(conversation_request_body: ConversationRequestBody):
 async def converse(user_id: str, last_conversations: Optional[int] = None):
     conversationList = get_conversation_list(user_id)
     return conversationList
+
+
+@router.post("/update-guardrails")
+async def update_guardrails(user_input: str, user_id: str):
+    update_guardrails_for_model_based_on_input(user_input, user_id)

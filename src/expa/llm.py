@@ -4,6 +4,7 @@ from typing import List
 
 from google import genai
 from .models.conversation import Conversation, Chat, Role
+from .conversation_persist import fetch_last_updated_guardrails_for_model
 from google.genai import types
 from google.genai.types import CachedContent, ContentEmbedding, EmbedContentResponse
 import numpy as np
@@ -26,9 +27,10 @@ api_key = 'AIzaSyCAq3W9kz6dJCGO6jF0Ee5zLBhWK6FcUpg'
 chat_model = 'models/gemini-2.0-flash-001'
 
 def converse_with_model(user_input: Chat, conversation_context: List[dict]):
+    model = ModelConnection()
     prompt = {
         'role': Role.USER.value,
-        'parts': [{'text': SYSTEM_PROMPT}]
+        'parts': [{'text': model.system_prompt}]
     }
     contents = [prompt]
     for data in conversation_context:
@@ -45,9 +47,21 @@ def converse_with_model(user_input: Chat, conversation_context: List[dict]):
     print(response.usage_metadata)
     return response.text
 
+
+def set_system_prompt_to_none():
+    ModelConnection._system_prompt = None
+
+
 class ModelConnection(object):
     client = None
 
     def __init__(self):
+        self._system_prompt = None
         if ModelConnection.client is None:
             ModelConnection.client = genai.Client(api_key=api_key)
+
+    @property
+    def system_prompt(self):
+        if self._system_prompt is None:
+            self._system_prompt = fetch_last_updated_guardrails_for_model()
+        return self._system_prompt

@@ -19,7 +19,7 @@ def initiate_conversation(conversation_request_body: ConversationRequestBody):
                                conversation_id)
     print(response)
     print("Pushing to DB")
-    add_data_to_collection(form_conversation_model(conversation_id, conversation_request_body.user_first_name, response))
+    add_data_to_collection(form_conversation_model(conversation_id, conversation_request_body.user_id, response))
     return ConversationResponseBody(
         model_response=response.text,
         conversation_id=conversation_id
@@ -46,6 +46,19 @@ def end_conversation(conversation_request_body: ConversationRequestBody):
     print("Received a request to end the conversation")
     update_summary_after_completion(conversation_request_body.conversation_id)
     return ConversationResponseBody()
+
+
+def update_guardrails_for_model_based_on_input(user_input: str, user_id: str):
+    print("Received a request to update the guardrails of the model")
+    updated_guardrails = UpdateGuardrails(
+        version_id=str(uuid.uuid4()),
+        created_by=user_id,
+        created_on=datetime.datetime.now(),
+        user_input=user_input
+    )
+    update_guardrails_for_model(updated_guardrails)
+    set_system_prompt_to_none()
+
 
 def form_chat_model(text: str, role: Role, conversationId: str):
     return Chat(
