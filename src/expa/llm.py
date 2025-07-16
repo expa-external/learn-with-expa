@@ -4,13 +4,13 @@ from typing import List
 
 from google import genai
 from .models.conversation import Conversation, Chat, Role
-from .conversation_persist import fetch_last_updated_guardrails_for_model
+from .persistence.conversation_persist import fetch_last_updated_guardrails_for_model
 from google.genai import types
 from google.genai.types import CachedContent, ContentEmbedding, EmbedContentResponse
 import numpy as np
 
 # import google.generativeai as genai
-from ..expa_configs import APP_CONFIG
+from expa_configs import APP_CONFIG
 
 SYSTEM_PROMPT = ("You are a friendly multilingual voice assistant. "
                  "Understand any spoken language, but respond in clear, concise, short and simple english or if user "

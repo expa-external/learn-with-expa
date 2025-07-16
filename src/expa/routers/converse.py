@@ -9,9 +9,9 @@ from pydantic import BaseModel
 # from expa.transcribe_audio import transcribe_audio
 import uuid
 
-from ..conversation_persist import get_conversation_list, add_data_to_collection, get_most_recent_conversation, update_data_to_collection
-from ..models.conversation import ConversationRequestBody, ConversationResponseBody, Conversation, Chat, Role
-from ..service.ConversationService import *
+from expa.persistence.conversation_persist import get_conversation_list, add_data_to_collection, get_most_recent_conversation, update_data_to_collection
+from expa.models.conversation import ConversationRequestBody, ConversationResponseBody, Conversation, Chat, Role
+from expa.service.ConversationService import *
 
 router = APIRouter(prefix="/api/v1", tags=["converse"])
 initial_user_input = ("This is start of the conversation with the user. You are required to initiate the conversation "
