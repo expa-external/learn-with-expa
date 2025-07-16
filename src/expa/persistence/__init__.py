@@ -14,7 +14,7 @@ class FirestoreClient(object):
         if FirestoreClient.connection is None:
             if not firebase_admin._apps:
                 if get_active_profile() == "local":
-                    cred = credentials.Certificate("cadet-user-firebase-adminsdk-fbsvc-310d513553.json")
+                    cred = credentials.Certificate("src/expa_configs/cadet-user-8489fcd85485.json")
                     firebase_admin.initialize_app(credential=cred, options={'projectId': 'cadet-user'})
                 else:
                     firebase_admin.initialize_app()
