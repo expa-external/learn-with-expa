@@ -7,14 +7,14 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_CREATE=false \
     APP_PROFILE=dev \
     GEMINI_API_KEY=<REPLACE_ME> \
-    GOOGLE_APPLICATION_CREDENTIALS=<REPLACE_ME>
+    GOOGLE_APPLICATION_CREDENTIALS=src/expa_configs/cadet-user-8489fcd85485.json
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
     libpq-dev \
-    portaudio19-dev \  
+    portaudio19-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -31,13 +31,16 @@ WORKDIR /app
 # COPY requirements.txt .
 # Copy only the necessary files first for layer caching
 COPY pyproject.toml poetry.lock ./
+RUN poetry lock
 
 # RUN pip install -r requirements.txt
 
 # Install dependencies
-RUN poetry install --no-root --only main
+RUN poetry install --no-root --no-dev
 
 COPY . .
+
+EXPOSE 8000
 
 # Run your application (replace with your actual entrypoint)
 CMD ["python3", "run.py"]

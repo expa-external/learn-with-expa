@@ -10,6 +10,8 @@ class ConversationRequestBody(BaseModel):
     end_conversation: bool | None = None
     user_first_name: str | None = None
     conversation_id: str | None = None
+    user_id: str | None = None
+    topic_id: str | None = None
 
 
 class ConversationResponseBody(BaseModel):
@@ -37,3 +39,10 @@ class Conversation(BaseModel):
     chat_history: List[Chat] = None
     creation_ts: datetime
     updated_ts: datetime
+
+
+class UpdateGuardrails(BaseModel):
+    version_id: str
+    created_by: str
+    created_on: datetime
+    user_input: str | None
