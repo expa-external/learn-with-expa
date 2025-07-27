@@ -1,6 +1,8 @@
 from ..models.conversation import ConversationRequestBody, ConversationResponseBody
 from ..models.theme import Theme
 from ..llm import *
+from .speech_to_text import *
+from .text_to_speech import *
 from ..persistence.conversation_persist import *
 from ..persistence.theme_persist import *
 import datetime
@@ -54,6 +56,13 @@ def end_conversation(conversation_request_body: ConversationRequestBody):
     print("Received a request to end the conversation")
     update_summary_after_completion(conversation_request_body.conversation_id)
     return ConversationResponseBody()
+
+
+def transcribe_audio_file_with_api(audio_file: bytes, file_type: str):
+    return transcribe_audio_file(audio_file_content=audio_file, file_type=file_type)
+
+def synthesize_text_input_to_audio(text_input: str):
+    return convert_text_to_speech(text_input)
 
 
 def update_guardrails_for_model_based_on_input(user_input: str, user_id: str):
