@@ -2,7 +2,7 @@ import datetime
 import base64
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse
 from typing import List, Optional
 from pydantic import BaseModel
 # from expa.chat import chat_with_gemini
@@ -110,7 +110,7 @@ async def convert_audio_input_to_text(audio_file: UploadFile = File(...)):
         if content is None:
             raise HTTPException(status_code=400, detail="Empty file uploaded")
         response = transcribe_audio_file_with_api(content, audio_file.content_type)
-        return Response(content=response)
+        return JSONResponse(content=response)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to convert the given input audio file to text: {str(e)}")
 
@@ -119,7 +119,8 @@ async def convert_audio_input_to_text(audio_file: UploadFile = File(...)):
 async def convert_text_input_to_audio(input_text: str):
     try:
         response = synthesize_text_input_to_audio(input_text)
-        return Response(content=response)
+        json_response = {"response": base64.b64encode(response).decode('utf-8')}
+        return JSONResponse(content=json_response)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to convert the given input text to audio: {str(e)}")
 
