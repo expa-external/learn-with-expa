@@ -1,4 +1,5 @@
 import datetime
+import base64
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
@@ -98,7 +99,30 @@ async def converse(conversation_request_body: ConversationRequestBody):
     elif conversation_request_body.end_conversation is True:
         return end_conversation(conversation_request_body)
 
+@router.post("/speech-to-text", status_code=200)
+async def convert_audio_input_to_text(audio_file: UploadFile = File(...)):
+    try:
+        if not audio_file.filename:
+            raise HTTPException(status_code=400, detail="No File Uploaded")
+        if audio_file.content_type not in ["audio/wav", "audio/amr"]:
+            raise HTTPException(status_code=415, detail=f"Unsupported media type. Allowed types: audio/wav, audio/amr")
+        content = await audio_file.read()
+        if content is None:
+            raise HTTPException(status_code=400, detail="Empty file uploaded")
+        response = transcribe_audio_file_with_api(content, audio_file.content_type)
+        return JSONResponse(content=response)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to convert the given input audio file to text: {str(e)}")
 
+
+@router.post("/text-to-speech", status_code=200)
+async def convert_text_input_to_audio(input_text: str):
+    try:
+        response = synthesize_text_input_to_audio(input_text)
+        json_response = {"response": base64.b64encode(response).decode('utf-8')}
+        return JSONResponse(content=json_response)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to convert the given input text to audio: {str(e)}")
 
 
 @router.get("/conversation", response_model=List[Conversation])
@@ -107,6 +131,3 @@ async def converse(user_id: str, last_conversations: Optional[int] = None):
     return conversationList
 
 
-@router.post("/update-guardrails")
-async def update_guardrails(user_input: str, user_id: str):
-    update_guardrails_for_model_based_on_input(user_input, user_id)

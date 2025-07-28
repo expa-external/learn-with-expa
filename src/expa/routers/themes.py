@@ -46,4 +46,12 @@ async def get_theme_by_id(topic_id: str):
         return {"theme": theme}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch theme: {str(e)}")
+
+@router.post("/update-guardrails")
+async def update_guardrails(user_input: str, user_id: str):
+    try:
+        update_guardrails_for_model_based_on_input(user_input, user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to update guardrails")
+
         
