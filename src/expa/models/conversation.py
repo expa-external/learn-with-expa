@@ -11,7 +11,6 @@ class ConversationRequestBody(BaseModel):
     user_first_name: str | None = None
     conversation_id: str | None = None
     user_id: str | None = None
-    topic_id: str | None = None
 
 
 class ConversationResponseBody(BaseModel):

@@ -1,8 +1,7 @@
 from ..models.conversation import ConversationRequestBody, ConversationResponseBody
-from ..models.theme import Theme
+from ..models.starter import Starter
 from ..llm import *
 from ..persistence.conversation_persist import *
-from ..persistence.theme_persist import *
 import datetime
 
 from typing import Optional
@@ -10,16 +9,10 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# initial_user_input = ("This is start of the conversation with the user. You are required to initiate the conversation with the very short greetings"
-#                       " and understanding what is the user mindset. The logged in user name is {}. "
-#                     theme != null then " The user want to have a discussion around the topic {} and please start the conversation around the same topic. A little bit of deviation is fine but revolve the conversation around the idea if maybe not the same scenario." 
-#                     " Let the conversation starter be around that topic and short starter.")
-
-
 def initiate_conversation(conversation_request_body: ConversationRequestBody):
     conversation_id = str(uuid.uuid4())
     print("Forming chat model")
-    user_input = form_chat_model(build_initial_system_message(conversation_request_body.user_first_name, conversation_request_body.topic_id), Role.USER,
+    user_input = form_chat_model(build_initial_system_message(conversation_request_body.user_first_name, conversation_request_body.user_input), Role.USER,
                                  conversation_id)
     print("Passing prompt to model")
     response = form_chat_model(converse_with_model(user_input, []), Role.MODEL,
@@ -88,40 +81,36 @@ def form_conversation_model(conversation_id: str, first_name: str, chat: Chat):
     )
 
 
-def build_initial_system_message(user_name: str, topic_id: Optional[str] = None) -> str:
+def build_initial_system_message(user_name: str, starter_message_from_user_input: Optional[str] = None) -> str:
     try:
         base_intro = (
-            f"This is the start of the conversation with the user. "
-            f"You are required to initiate the conversation with very short greetings "
-            f"and try to understand the user's mindset. The logged-in user name is {user_name}."
+            f"You are an English language instructor. This is the beginning of a conversation with a beginner-level user named {user_name}. "
+            f"Start with a very short and friendly greeting. Use extremely simple English. "
+            f"Your goal is to help the user start speaking confidently, so ask a light question to understand their mood or interest."
         )
 
-        if topic_id:
-            theme = get_theme_by_topic_id(topic_id)
-            print(theme)
-        else:
-            theme = None
-
-        if theme:
+        if starter_message_from_user_input:
             topic_part = (
-                f" The user wants to have a discussion around the topic '{theme['name']}'. "
-                f"Please start the conversation around this topic. A little deviation is fine, "
-                f"but try to revolve the conversation around the idea: '{theme['short_description']}', even if not the same scenario. "
-                f"Let the conversation starter be brief and theme-driven."
+                f" Since the user selected the topic '{starter_message_from_user_input}', "
+                f"mention it briefly. Say: 'Since you selected the topic \"{starter_message_from_user_input}\", let's discuss further.' "
+                f"Then, start with a very short scenario or question around this topic. "
+                f"Keep the language extremely simple so a beginner in English can easily understand. "
+                f"Talk like a friendly colleague or a warm teacher — not too formal, and not too robotic."
             )
         else:
             topic_part = (
-                " There is no specific topic provided. Start an open-ended but ethically safe and socially appropriate conversation. "
-                "Ask light questions to understand the user's interests or mood. Be respectful and friendly."
+                " There is no specific topic provided. "
+                "Start with a safe and friendly open-ended question. "
+                "Ask about the user's day, feelings, or general interests. "
+                "Keep it very short, soft, and beginner-friendly in English."
             )
 
         return base_intro + topic_part
 
     except Exception as e:
         return (
-            f"This is the start of the conversation with the user. "
-            f"You are required to initiate the conversation with very short greetings and try to understand the user's mindset. "
-            f"The logged-in user name is {user_name}. "
-            f"There was an issue retrieving the topic information, so start a general but ethical and respectful conversation."
+            f"You are an English language instructor. This is the beginning of a conversation with a beginner-level user named {user_name}. "
+            f"Start with a very short and friendly greeting. There was an issue retrieving the topic information, "
+            f"so begin a general but respectful conversation with a simple, light question to break the ice."
         )
 

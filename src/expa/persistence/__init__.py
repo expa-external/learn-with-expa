@@ -8,7 +8,7 @@ class FirestoreClient(object):
     connection = None
     conversations_collection = 'conversations'
     guardrails_collection = 'guardrails'
-    themes_collection = 'themes'
+    starters_collection = 'starters'
 
     def __init__(self):
         if FirestoreClient.connection is None:

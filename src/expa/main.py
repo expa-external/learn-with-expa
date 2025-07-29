@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from .llm import ModelConnection
 from .routers.root import router as root_router
 from .routers.converse import router as converse_router
-from .routers.themes import router as themes_router
+from .routers.starters import router as starters_router
 from ..expa_configs import APP_CONFIG
 
 load_dotenv()
@@ -22,7 +22,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Expa Voice Assistant", version="1.0")
     app.include_router(root_router)
     app.include_router(converse_router)
-    app.include_router(themes_router)
+    app.include_router(starters_router)
     _ = ModelConnection()
     return app
 
