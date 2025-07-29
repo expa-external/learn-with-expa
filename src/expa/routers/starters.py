@@ -16,6 +16,8 @@ from expa.persistence.starter_persist import (
 
 router = APIRouter(prefix="/api/v1", tags=["converse"])
 
+RANDOMIZED_COUNT = 5
+
 @router.get("/starters")
 def fetch_starter(topics: Optional[List[str]] = Query(None), isRandom: bool = False):
     try:
@@ -25,7 +27,9 @@ def fetch_starter(topics: Optional[List[str]] = Query(None), isRandom: bool = Fa
             starters = get_starters()
 
         if isRandom and starters:
-            return [random.choice(starters)]
+            if len(starters) < RANDOMIZED_COUNT:
+                return starters
+            return random.sample(starters, RANDOMIZED_COUNT)
 
         return starters
     except Exception as e:
