@@ -43,15 +43,14 @@ def update_starter(request: UpdateStarterRequestBody):
         if request.operation_type == 'I':
             if not request.topic_name:
                 raise HTTPException(status_code=400, detail="Topic name is required for creation")
-            starter_id = str(uuid.uuid4())
             new_starter = Starter(
-                starter_id=starter_id,
+                starter_id="",
                 topic_name=request.topic_name,
                 starter_message=request.starter_message,
                 updated_by=request.updated_by,
                 updated_ts=now
             )
-            add_starter(new_starter)
+            starter_id = add_starter(new_starter)
             return {"message": "Starter created", "starter_id": starter_id}
 
         elif request.operation_type == 'U':
@@ -64,14 +63,14 @@ def update_starter(request: UpdateStarterRequestBody):
                 updated_by=request.updated_by,
                 updated_ts=now
             )
-            update_starter_db(updated_starter)
-            return {"message": "Starter updated"}
+            starter_id = update_starter_db(updated_starter)
+            return {"message": "Starter updated", "starter_id": starter_id}
 
         elif request.operation_type == 'D':
             if not request.starter_id:
                 raise HTTPException(status_code=400, detail="Starter ID required for deletion")
-            remove_starter(request.starter_id)
-            return {"message": "Starter deleted"}
+            starter_id = remove_starter(request.starter_id)
+            return {"message": "Starter deleted", "starter_id": starter_id}
 
         else:
             raise HTTPException(status_code=400, detail="Invalid operation type")

@@ -22,6 +22,7 @@ def add_starter(starter: Starter):
 
         doc_ref = firestore_client.connection.collection(firestore_client.starters_collection).document(starter_id)
         doc_ref.set(starter_dict)
+        return starter_id
     except Exception as e:
         logger.error(f"Error while adding starter for topic '{starter.topic_name}'", exc_info=True)
         raise e
@@ -40,6 +41,7 @@ def remove_starter(starter_id: str):
         if doc:
             doc.reference.delete()
             logger.info(f"Starter with starter_id '{starter_id}' deleted.")
+            return starter_id
         else:
             raise ValueError(f"Starter with starter_id '{starter_id}' not found.")
     except Exception as e:
@@ -70,6 +72,7 @@ def update_starter(starter: Starter):
 
             update_data["updated_ts"] = datetime.now().isoformat()
             doc.reference.update(update_data)
+            return starter.starter_id
         else:
             raise ValueError(f"Starter with starter_id '{starter.starter_id}' not found")
     except Exception as e:

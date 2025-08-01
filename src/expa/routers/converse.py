@@ -35,12 +35,20 @@ initial_user_input = ("This is start of the conversation with the user. You are 
 
 @router.post("/converse", response_model=ConversationResponseBody)
 async def converse(conversation_request_body: ConversationRequestBody):
-    if conversation_request_body.continue_conversation is False:
-        return initiate_conversation(conversation_request_body)
-    elif conversation_request_body.continue_conversation is True:
+    continue_flag = conversation_request_body.continue_conversation
+    end_flag = conversation_request_body.end_conversation
+
+    if continue_flag and end_flag:
+        raise HTTPException(status_code=400, detail="Cannot continue and end conversation at the same time")
+    
+    if continue_flag:
         return continue_conversation(conversation_request_body)
-    elif conversation_request_body.end_conversation is True:
+    elif end_flag:
         return end_conversation(conversation_request_body)
+    else:
+        return initiate_conversation(conversation_request_body)
+    
+    
 
 
 
