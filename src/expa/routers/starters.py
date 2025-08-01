@@ -14,7 +14,7 @@ from expa.persistence.starter_persist import (
     get_starters_by_topic_names
 )
 
-router = APIRouter(prefix="/api/v1", tags=["converse"])
+router = APIRouter(prefix="/api/v1", tags=["Starters"])
 
 RANDOMIZED_COUNT = 5
 

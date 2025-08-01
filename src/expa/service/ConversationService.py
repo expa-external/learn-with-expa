@@ -48,19 +48,6 @@ def end_conversation(conversation_request_body: ConversationRequestBody):
     update_summary_after_completion(conversation_request_body.conversation_id)
     return ConversationResponseBody()
 
-
-def update_guardrails_for_model_based_on_input(user_input: str, user_id: str):
-    print("Received a request to update the guardrails of the model")
-    updated_guardrails = UpdateGuardrails(
-        version_id=str(uuid.uuid4()),
-        created_by=user_id,
-        created_on=datetime.datetime.now(),
-        user_input=user_input
-    )
-    update_guardrails_for_model(updated_guardrails)
-    set_system_prompt_to_none()
-
-
 def form_chat_model(text: str, role: Role, conversationId: str):
     return Chat(
         text=text,

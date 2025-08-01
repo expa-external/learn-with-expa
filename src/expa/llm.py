@@ -4,7 +4,7 @@ from typing import List
 
 from google import genai
 from .models.conversation import Conversation, Chat, Role
-from .persistence.conversation_persist import fetch_last_updated_guardrails_for_model
+from .persistence.guardrails_persist import fetch_last_updated_guardrails_for_model
 from google.genai import types
 from google.genai.types import CachedContent, ContentEmbedding, EmbedContentResponse
 import numpy as np

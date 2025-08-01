@@ -13,7 +13,7 @@ from expa.persistence.conversation_persist import get_conversation_list, add_dat
 from expa.models.conversation import ConversationRequestBody, ConversationResponseBody, Conversation, Chat, Role
 from expa.service.ConversationService import *
 
-router = APIRouter(prefix="/api/v1", tags=["converse"])
+router = APIRouter(prefix="/api/v1", tags=["Converse"])
 initial_user_input = ("This is start of the conversation with the user. You are required to initiate the conversation "
                       "understanding how are they and what they want to learn today. The logged in user name is ")
 
@@ -49,16 +49,9 @@ async def converse(conversation_request_body: ConversationRequestBody):
         return initiate_conversation(conversation_request_body)
     
     
-
-
-
-
 @router.get("/conversation", response_model=List[Conversation])
 async def converse(user_id: str, last_conversations: Optional[int] = None):
     conversationList = get_conversation_list(user_id)
     return conversationList
 
 
-@router.post("/update-guardrails")
-async def update_guardrails(user_input: str, user_id: str):
-    update_guardrails_for_model_based_on_input(user_input, user_id)

@@ -8,6 +8,7 @@ from .llm import ModelConnection
 from .routers.root import router as root_router
 from .routers.converse import router as converse_router
 from .routers.starters import router as starters_router
+from .routers.guardrails import router as guardrails_router
 from ..expa_configs import APP_CONFIG
 
 load_dotenv()
@@ -23,6 +24,7 @@ def create_app() -> FastAPI:
     app.include_router(root_router)
     app.include_router(converse_router)
     app.include_router(starters_router)
+    app.include_router(guardrails_router)
     _ = ModelConnection()
     return app
 
