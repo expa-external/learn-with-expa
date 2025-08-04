@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, HTTPException
 
+from conversation import GuardrailRequest
 from expa.persistence.conversation_persist import get_conversation_list, add_data_to_collection, get_most_recent_conversation, update_data_to_collection
 from expa.persistence.theme_persist import get_themes, get_theme_by_topic_id, update_theme, remove_theme, add_theme
 from expa.models.theme import Theme
@@ -48,9 +49,10 @@ async def get_theme_by_id(topic_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to fetch theme: {str(e)}")
 
 @router.post("/update-guardrails")
-async def update_guardrails(user_input: str, user_id: str):
+async def update_guardrails(request: GuardrailRequest):
     try:
-        update_guardrails_for_model_based_on_input(user_input, user_id)
+        update_guardrails_for_model_based_on_input(request.user_input, request.user_id)
+        return {"Response": "Guardrails are successfully updated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to update guardrails")
 

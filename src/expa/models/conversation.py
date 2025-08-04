@@ -46,3 +46,8 @@ class UpdateGuardrails(BaseModel):
     created_by: str
     created_on: datetime
     user_input: str | None
+
+
+class GuardrailRequest(BaseModel):
+    user_input: str
+    user_id: str

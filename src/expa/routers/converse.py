@@ -109,7 +109,7 @@ async def convert_audio_input_to_text(audio_file: UploadFile = File(...)):
         content = await audio_file.read()
         if content is None:
             raise HTTPException(status_code=400, detail="Empty file uploaded")
-        response = transcribe_audio_file_with_api(content, audio_file.content_type)
+        response = await transcribe_audio_file_with_api(content, audio_file.content_type)
         return JSONResponse(content=response)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to convert the given input audio file to text: {str(e)}")
@@ -129,5 +129,14 @@ async def convert_text_input_to_audio(input_text: str):
 async def converse(user_id: str, last_conversations: Optional[int] = None):
     conversationList = get_conversation_list(user_id)
     return conversationList
+
+
+@router.get("/fetch-guardrails", status_code=200)
+async def fetch_guardrails():
+    try:
+        response = fetch_last_updated_guardrails_for_model()
+        return {"Response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch last updated guardrails")
 
 
